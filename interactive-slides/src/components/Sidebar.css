@@ -61,6 +61,7 @@
 .sidebar-nav {
   flex: 1;
   padding: 10px;
+  padding-bottom: 80px; /* Extra padding at bottom for mobile */
   display: flex;
   flex-direction: column;
   gap: 15px;
