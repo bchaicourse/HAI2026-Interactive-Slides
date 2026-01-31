@@ -11,6 +11,8 @@ function App() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [bottomHeight, setBottomHeight] = useState(30); // percentage
   const [isDragging, setIsDragging] = useState(false);
+  const [mobileTab, setMobileTab] = useState('content'); // 'code', 'content', 'info'
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const containerRef = useRef(null);
 
   const currentSection = sections.find(s => s.id === currentSectionId);
@@ -54,15 +56,54 @@ function App() {
 
   return (
     <div className="app">
-      <Sidebar
-        sections={sections}
-        currentSectionId={currentSectionId}
-        onSectionChange={setCurrentSectionId}
-      />
+      {/* Mobile hamburger button */}
+      <button className="mobile-menu-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
+        ☰
+      </button>
+
+      {/* Sidebar with mobile drawer */}
+      <div className={`sidebar-wrapper ${sidebarOpen ? 'open' : ''}`}>
+        <Sidebar
+          sections={sections}
+          currentSectionId={currentSectionId}
+          onSectionChange={(id) => {
+            setCurrentSectionId(id);
+            setSidebarOpen(false);
+          }}
+        />
+      </div>
+
+      {/* Overlay for mobile drawer */}
+      {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)}></div>}
 
       <div className="main-content" ref={containerRef}>
+        {/* Mobile tab navigation */}
+        <div className="mobile-tabs">
+          <button
+            className={`mobile-tab ${mobileTab === 'content' ? 'active' : ''}`}
+            onClick={() => setMobileTab('content')}
+          >
+            Content
+          </button>
+          <button
+            className={`mobile-tab ${mobileTab === 'code' ? 'active' : ''}`}
+            onClick={() => setMobileTab('code')}
+          >
+            Code
+          </button>
+          {hasBottomPanel && (
+            <button
+              className={`mobile-tab ${mobileTab === 'info' ? 'active' : ''}`}
+              onClick={() => setMobileTab('info')}
+            >
+              Info
+            </button>
+          )}
+        </div>
+
+        {/* Desktop layout */}
         <div
-          className="top-panels"
+          className="top-panels desktop-only"
           style={{
             height: hasBottomPanel ? `${100 - bottomHeight}%` : '100%',
           }}
@@ -81,16 +122,45 @@ function App() {
           </div>
         </div>
 
+        {/* Mobile tab content */}
+        <div className="mobile-tab-content">
+          {mobileTab === 'code' && (
+            <div className="mobile-panel">
+              <CodeViewer
+                currentSection={currentSection}
+                prevSection={prevSection}
+                selectedFile={selectedFile}
+                onFileSelect={setSelectedFile}
+              />
+            </div>
+          )}
+          {mobileTab === 'content' && (
+            <div className="mobile-panel">
+              <ContentViewer section={currentSection} />
+            </div>
+          )}
+          {mobileTab === 'info' && hasBottomPanel && (
+            <div className="mobile-panel">
+              <BottomPanel
+                howToRun={currentSection.howToRun}
+                expectedOutput={currentSection.expectedOutput}
+                screenshots={currentSection.screenshots}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Desktop bottom panel */}
         {hasBottomPanel && (
           <>
             <div
-              className={`resize-handle ${isDragging ? 'dragging' : ''}`}
+              className={`resize-handle desktop-only ${isDragging ? 'dragging' : ''}`}
               onMouseDown={handleMouseDown}
             >
               <div className="resize-handle-line"></div>
             </div>
             <div
-              className="bottom-panel-wrapper"
+              className="bottom-panel-wrapper desktop-only"
               style={{
                 height: `${bottomHeight}%`,
               }}

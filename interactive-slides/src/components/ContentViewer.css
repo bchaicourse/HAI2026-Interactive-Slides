@@ -1,5 +1,6 @@
 .content-viewer {
   height: 100%;
+  width: 100%;
   overflow-y: auto;
   background-color: #ffffff;
   padding: 40px;
@@ -13,6 +14,12 @@
   font-size: 16px;
   line-height: 1.7;
   color: #24292e;
+}
+
+@media (max-width: 768px) {
+  .content-viewer {
+    padding: 20px;
+  }
 }
 
 .markdown-body h1 {
