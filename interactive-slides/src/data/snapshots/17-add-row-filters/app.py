@@ -1,0 +1,72 @@
+import streamlit as st
+import pandas as pd
+
+st.set_page_config(page_title="Data Analysis Tool", layout="wide")
+
+st.title("Interactive Data Analysis Tool")
+
+df = pd.read_csv('movies.csv')
+
+with st.sidebar:
+    st.header("Data Filters")
+
+    all_columns = df.columns.tolist()
+    selected_columns = st.multiselect(
+        "Select columns to include:",
+        all_columns,
+        default=all_columns
+    )
+
+    if not selected_columns:
+        st.error("Please select at least one column.")
+        st.stop()
+
+    filtered_df = df[selected_columns]
+
+    st.subheader("Row Filters")
+    if 'Genre' in filtered_df.columns:
+        genres = filtered_df['Genre'].dropna().unique()
+        selected_genres = st.multiselect(
+            "Filter by Genre:",
+            genres,
+            default=genres.tolist()
+        )
+        filtered_df = filtered_df[filtered_df['Genre'].isin(selected_genres)]
+
+    if 'Release Year' in filtered_df.columns:
+        min_year = int(filtered_df['Release Year'].min())
+        max_year = int(filtered_df['Release Year'].max())
+        year_range = st.slider(
+            "Filter by Release Year:",
+            min_year,
+            max_year,
+            (min_year, max_year)
+        )
+        filtered_df = filtered_df[
+            (filtered_df['Release Year'] >= year_range[0]) &
+            (filtered_df['Release Year'] <= year_range[1])
+        ]
+
+    if 'IMDB Rating' in filtered_df.columns:
+        min_rating = float(filtered_df['IMDB Rating'].min())
+        max_rating = float(filtered_df['IMDB Rating'].max())
+        rating_range = st.slider(
+            "Filter by IMDB Rating:",
+            min_rating,
+            max_rating,
+            (min_rating, max_rating)
+        )
+        filtered_df = filtered_df[
+            (filtered_df['IMDB Rating'] >= rating_range[0]) &
+            (filtered_df['IMDB Rating'] <= rating_range[1])
+        ]
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.subheader("Filtered Dataset")
+    st.write(filtered_df)
+
+with col2:
+    st.subheader("Analysis Results")
+    st.write("Results will appear here...")

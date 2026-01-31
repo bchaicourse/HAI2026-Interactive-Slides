@@ -1,0 +1,114 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.app {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.top-panels {
+  display: flex;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.column {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.resize-handle {
+  height: 6px;
+  background-color: #e9ecef;
+  cursor: ns-resize;
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  z-index: 10;
+}
+
+.resize-handle:hover {
+  background-color: #0d7377;
+}
+
+.resize-handle.dragging {
+  background-color: #0d7377;
+}
+
+.resize-handle-line {
+  width: 40px;
+  height: 3px;
+  background-color: #adb5bd;
+  border-radius: 2px;
+}
+
+.resize-handle:hover .resize-handle-line,
+.resize-handle.dragging .resize-handle-line {
+  background-color: #ffffff;
+}
+
+.bottom-panel-wrapper {
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.code-column {
+  border-right: 1px solid #e0e0e0;
+  background-color: #ffffff;
+}
+
+.content-column {
+  background-color: #ffffff;
+}
+
+/* Responsive design */
+@media (max-width: 1200px) {
+  .main-content {
+    flex-direction: column;
+  }
+
+  .column {
+    height: 50vh;
+  }
+
+  .code-column {
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+  }
+}
+
+@media (max-width: 768px) {
+  .app {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    max-height: 200px;
+  }
+
+  .main-content {
+    flex: 1;
+    overflow-y: auto;
+  }
+}
