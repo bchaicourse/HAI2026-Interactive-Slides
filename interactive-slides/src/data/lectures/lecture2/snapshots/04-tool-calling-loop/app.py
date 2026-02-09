@@ -39,7 +39,8 @@ for i in range(10):
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=messages,
-        tools=tools
+        tools=tools,
+        parallel_tool_calls=False
     )
 
     message = response.choices[0].message

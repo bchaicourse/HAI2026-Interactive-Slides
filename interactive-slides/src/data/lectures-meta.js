@@ -35,13 +35,23 @@ export const lectures = [
     id: 'lecture2',
     title: 'From Pipelines to Agents',
     parts: {
-      1: 'Function Calling'
+      1: 'Function Calling',
+      2: 'Building the UI',
+      3: 'Human-in-the-Loop'
     },
     sections: [
       { id: '01-tool-definitions', title: 'Defining Tools', part: 1 },
-      { id: '02-tool-selection', title: 'Tool Selection', part: 1 },
-      { id: '03-tool-execution', title: 'Tool Execution', part: 1 },
-      { id: '04-tool-calling-loop', title: 'Tool Calling Loop', part: 1 }
+      { id: '02-tool-selection', title: 'Letting the LLM Choose Tools', part: 1 },
+      { id: '03-tool-execution', title: 'Executing the Tool Call', part: 1 },
+      { id: '04-tool-calling-loop', title: 'Tool Calling Loop', part: 1 },
+      { id: '05-execute-code-tool', title: 'Applying Tools to Data Analysis', part: 1 },
+      { id: '06-react-loop', title: 'The ReAct Pattern', part: 1 },
+      { id: '07-starting-point', title: 'Starting Point', part: 2 },
+      { id: '08-react-loop', title: 'Adding the ReAct Loop', part: 2 },
+      { id: '09-state-rendering', title: 'Separating State, Logic, and UI', part: 2 },
+      { id: '10-chart-tool', title: 'Adding a Second Tool', part: 2 },
+      { id: '11-human-in-the-loop', title: 'Approval Gate', part: 3 },
+      { id: '12-reject-feedback', title: 'Reject & Feedback', part: 3 }
     ]
   }
 ];

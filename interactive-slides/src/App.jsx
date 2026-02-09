@@ -6,9 +6,17 @@ import CodeViewer from './components/CodeViewer';
 import ContentViewer from './components/ContentViewer';
 import BottomPanel from './components/BottomPanel';
 
+function getInitialLecture() {
+  const base = '/HAI2026-Interactive-Slides/';
+  const path = window.location.pathname.replace(base, '').replace(/\/$/, '');
+  const match = lectures.find(l => l.id === path);
+  return match || lectures[0];
+}
+
 function App() {
-  const [currentLectureId, setCurrentLectureId] = useState(lectures[0].id);
-  const [currentSectionId, setCurrentSectionId] = useState(lectures[0].sections[0].id);
+  const initialLecture = getInitialLecture();
+  const [currentLectureId, setCurrentLectureId] = useState(initialLecture.id);
+  const [currentSectionId, setCurrentSectionId] = useState(initialLecture.sections[0].id);
   const [selectedFile, setSelectedFile] = useState(null);
   const [bottomHeight, setBottomHeight] = useState(30); // percentage
   const [isDragging, setIsDragging] = useState(false);
@@ -26,6 +34,7 @@ function App() {
     setCurrentLectureId(lectureId);
     setCurrentSectionId(lecture.sections[0].id);
     setSelectedFile(null);
+    window.history.replaceState(null, '', `/HAI2026-Interactive-Slides/${lectureId}`);
   };
 
   const handleMouseDown = (e) => {

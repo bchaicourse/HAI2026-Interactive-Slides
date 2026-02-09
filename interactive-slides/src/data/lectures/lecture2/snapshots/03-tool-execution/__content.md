@@ -1,6 +1,8 @@
 ## Executing the Tool Call
 
-In the previous step, the model told us *what* it wants to call. Now we implement the actual functions and execute them.
+We saw that the model responds with *which tool* it wants to call and *what arguments* to pass. But the model doesn't actually run anything. It's our job to take that response and execute it.
+
+First, we define the actual Python functions that do the work:
 
 ```python
 def plus(a, b):
@@ -10,9 +12,13 @@ def multiply(a, b):
     return a * b
 ```
 
-When a tool call is present, the arguments come as a JSON string. We parse them with `json.loads` and dispatch to the matching function:
+Then, when the model returns a tool call, we need to:
+
+1. **Parse the arguments**: They come back as a JSON string, so we use `json.loads` to convert them into a Python dictionary.
+2. **Match the tool name**: Check which function the model requested and call it with the parsed arguments.
 
 ```python
+name = tool_call.function.name
 args = json.loads(tool_call.function.arguments)
 
 if name == "Multiply":
@@ -21,4 +27,4 @@ elif name == "Plus":
     result = plus(args["a"], args["b"])
 ```
 
-The computation is done by Python, not the LLM. The model chose the right tool and extracted the arguments; our code does the math.
+This is an important distinction to keep in mind: the LLM chose the right tool and extracted the arguments from natural language, but **Python is doing the actual computation**. The model never calculated `123789 * 4564560` itself.

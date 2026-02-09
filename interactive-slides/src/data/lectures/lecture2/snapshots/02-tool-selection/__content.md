@@ -1,20 +1,27 @@
-## Sending Tools to the LLM
+## Letting the LLM Choose Tools
 
-Now we pass the tool definitions to the API along with a user question:
+We've defined what tools are available. Now the question is: how do we let the LLM actually *know about* these tools so it can decide to use them?
+
+The answer is the `tools` parameter. When making an API call, we pass our tool definitions alongside the user's message:
 
 ```python
 response = client.chat.completions.create(
     model="gpt-4o-mini",
     messages=[{"role": "user", "content": "What is 123789 multiplied by 4564560?"}],
-    tools=tools
+    tools=tools   # <-- this is what makes the LLM aware of our tools
 )
 ```
 
-When tools are provided, the model can respond in two ways:
-- **A `tool_calls` list**: it wants to use a tool
-- **Regular text**: it answered directly without using any tool
+By including `tools=tools`, the LLM can now see the name, description, and parameters of every tool we defined. It will read those descriptions and decide on its own whether any tool is relevant to the user's question.
 
-We check which case it is:
+### Reading the Model's Response
+
+Once the LLM responds, there are two possible outcomes:
+
+1. The model **wants to use a tool** (the response contains `tool_calls`)
+2. The model **answers directly** with text (no tools needed)
+
+We can check which case it is:
 
 ```python
 message = response.choices[0].message
@@ -27,33 +34,33 @@ else:
     print(message.content)              # direct text response
 ```
 
-### Three Queries, Three Different Responses
+### Seeing It in Action
 
-For "What is 123789 multiplied by 4564560?":
+Let's try sending three different queries to the same model with the same two tools (`Plus` and `Multiply`), and see how the model decides differently depending on the question.
+
+**Query 1: "What is 123789 multiplied by 4564560?"**
 ```
 Tool called: Multiply
 Arguments:   {"a":123789,"b":4564560}
 ```
 
-For "What is 123789 plus 4564560?":
+The model recognizes this as a multiplication problem, picks the `Multiply` tool, and extracts the two numbers as arguments.
+
+**Query 2: "What is 123789 plus 4564560?"**
 ```
 Tool called: Plus
 Arguments:   {"a":123789,"b":4564560}
 ```
 
-For "What is the capital of France?":
+Same idea, different tool. The model picks `Plus` this time.
+
+**Query 3: "What is the capital of France?"**
 ```
 Response: The capital of France is Paris.
 ```
 
-The model reads the tool descriptions and decides whether any tool is relevant. For arithmetic questions, it selects the matching tool and extracts the numbers as structured arguments. For unrelated questions, it skips the tools entirely and responds with text.
+This question has nothing to do with math. The model decides that neither `Plus` nor `Multiply` is relevant, so it skips the tools entirely and responds with plain text.
 
-### Key Observation
+### Important: The Model Didn't Compute Anything
 
-Notice that **the model did not compute anything**. It only said *what it wants to call* and *with what arguments*. The response is a structured request, not an answer. To get an actual result, our code needs to:
-
-1. Execute the requested tool locally
-2. Send the result back to the model
-3. Let the model compose a final answer
-
-This execute-and-return flow is what we build next.
+Notice that the model only said *what it wants to call* and *with what arguments*. It did not actually perform the calculation. The response is a structured request, not an answer.

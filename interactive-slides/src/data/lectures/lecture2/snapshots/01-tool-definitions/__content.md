@@ -2,7 +2,7 @@
 
 ## From Hardcoded Pipelines to Tool Selection
 
-In Lecture 1, our analysis pipeline was hardcoded:
+Previously, our analysis pipeline was hardcoded into three fixed steps:
 
 ```python
 code = generate_code(question, schema)      # always step 1
@@ -28,35 +28,35 @@ class Plus(BaseModel):
     b: float = Field(description="The second number")
 ```
 
-- The **class docstring** becomes the tool's description
+- The **class docstring** (`"""Add two numbers together."""`) becomes the tool's description
 - Each **field** becomes a parameter with its type and description
 
-```python
-tools = [pydantic_function_tool(Plus), pydantic_function_tool(Multiply)]
-```
-
-`pydantic_function_tool()` converts each Pydantic model into the JSON schema format the API expects. For example, `pydantic_function_tool(Plus)` generates:
+Calling `pydantic_function_tool(Plus)` converts this Pydantic model into a JSON structure:
 
 ```json
 {
   "type": "function",
   "function": {
     "name": "Plus",
-    "description": "Add two numbers together.",
+    "strict": true,
     "parameters": {
+      "description": "Add two numbers together.",
       "properties": {
-        "a": { "type": "number", "description": "The first number" },
-        "b": { "type": "number", "description": "The second number" }
+        "a": { "description": "The first number", "title": "A", "type": "number" },
+        "b": { "description": "The second number", "title": "B", "type": "number" }
       },
       "required": ["a", "b"],
-      "type": "object"
-    }
+      "title": "Plus",
+      "type": "object",
+      "additionalProperties": false
+    },
+    "description": "Add two numbers together."
   }
 }
 ```
 
-- **`name`**: the class name, used as the tool identifier
-- **`description`**: from the docstring. The LLM reads this to decide when to use the tool.
-- **`parameters`**: from the fields. The LLM uses this to construct valid arguments.
+You don't need to memorize this structure. It's a predefined format for communicating tool information between your code and the API. The key fields to understand are:
 
-The LLM receives these definitions and uses them to decide which tool to call and with what arguments.
+- **`name`**: The class name, used as the tool identifier.
+- **`description`**: From the docstring. The LLM reads this to decide *when* to use the tool.
+- **`parameters`**: From the fields. The LLM uses this to construct valid arguments.
