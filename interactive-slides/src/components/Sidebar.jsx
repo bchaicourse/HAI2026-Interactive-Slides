@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import './Sidebar.css';
-import { partTitles } from '../data/sections-meta.js';
 
-function Sidebar({ sections, currentSectionId, onSectionChange }) {
+function Sidebar({ lectures, currentLectureId, onLectureChange, sections, currentSectionId, onSectionChange }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const currentLecture = lectures.find(l => l.id === currentLectureId);
 
   // Group sections by part
   const groupedSections = sections.reduce((acc, section, index) => {
@@ -18,7 +19,7 @@ function Sidebar({ sections, currentSectionId, onSectionChange }) {
   return (
     <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-header">
-        <h2>Building an Interactive Data Analysis Tool</h2>
+        <h2>{currentLecture.title}</h2>
         <button
           className="collapse-btn"
           onClick={() => setIsCollapsed(!isCollapsed)}
@@ -27,12 +28,27 @@ function Sidebar({ sections, currentSectionId, onSectionChange }) {
           {isCollapsed ? '→' : '←'}
         </button>
       </div>
+
+      {!isCollapsed && lectures.length > 1 && (
+        <div className="lecture-tabs">
+          {lectures.map((lecture, index) => (
+            <button
+              key={lecture.id}
+              className={`lecture-tab ${currentLectureId === lecture.id ? 'active' : ''}`}
+              onClick={() => onLectureChange(lecture.id)}
+            >
+              Lecture {index + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
       <nav className="sidebar-nav">
         {Object.keys(groupedSections).map((part) => (
           <div key={part} className="sidebar-part">
             {!isCollapsed && (
               <div className="part-header">
-                Part {part}: {partTitles[part]}
+                Part {part}: {currentLecture.parts[part]}
               </div>
             )}
             {groupedSections[part].map((section) => (

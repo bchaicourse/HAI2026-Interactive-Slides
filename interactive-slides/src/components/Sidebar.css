@@ -58,6 +58,35 @@
   color: #2c3e50;
 }
 
+.lecture-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.lecture-tab {
+  flex: 1;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #6c757d;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.lecture-tab:hover {
+  background-color: #f0f0f0;
+  color: #2c3e50;
+}
+
+.lecture-tab.active {
+  color: #0d7377;
+  border-bottom-color: #0d7377;
+}
+
 .sidebar-nav {
   flex: 1;
   padding: 10px;

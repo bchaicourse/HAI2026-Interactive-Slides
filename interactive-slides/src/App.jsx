@@ -1,13 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import './App.css';
-import { sections } from './data/sections';
+import { lectures } from './data/sections';
 import Sidebar from './components/Sidebar';
 import CodeViewer from './components/CodeViewer';
 import ContentViewer from './components/ContentViewer';
 import BottomPanel from './components/BottomPanel';
 
 function App() {
-  const [currentSectionId, setCurrentSectionId] = useState(sections[0].id);
+  const [currentLectureId, setCurrentLectureId] = useState(lectures[0].id);
+  const [currentSectionId, setCurrentSectionId] = useState(lectures[0].sections[0].id);
   const [selectedFile, setSelectedFile] = useState(null);
   const [bottomHeight, setBottomHeight] = useState(30); // percentage
   const [isDragging, setIsDragging] = useState(false);
@@ -15,8 +16,17 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const containerRef = useRef(null);
 
+  const currentLecture = lectures.find(l => l.id === currentLectureId);
+  const sections = currentLecture.sections;
   const currentSection = sections.find(s => s.id === currentSectionId);
   const prevSection = sections[sections.findIndex(s => s.id === currentSectionId) - 1];
+
+  const handleLectureChange = (lectureId) => {
+    const lecture = lectures.find(l => l.id === lectureId);
+    setCurrentLectureId(lectureId);
+    setCurrentSectionId(lecture.sections[0].id);
+    setSelectedFile(null);
+  };
 
   const handleMouseDown = (e) => {
     e.preventDefault();
@@ -64,6 +74,9 @@ function App() {
       {/* Sidebar with mobile drawer */}
       <div className={`sidebar-wrapper ${sidebarOpen ? 'open' : ''}`}>
         <Sidebar
+          lectures={lectures}
+          currentLectureId={currentLectureId}
+          onLectureChange={handleLectureChange}
           sections={sections}
           currentSectionId={currentSectionId}
           onSectionChange={(id) => {

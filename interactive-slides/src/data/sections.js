@@ -1,36 +1,35 @@
-// Main sections data structure
-// Combines metadata with code snapshots loaded from files
+// Main data loader
+// Combines lecture metadata with code snapshots loaded from files
 
-import { sectionsMeta } from './sections-meta.js';
+import { lectures as lecturesMeta } from './lectures-meta.js';
 
-// Import all files from snapshots directories using Vite's glob import
-// This automatically loads all files and makes them available as modules
-const modules = import.meta.glob('./snapshots/**/*', {
+// Import all files from lecture snapshot directories using Vite's glob import
+const modules = import.meta.glob('./lectures/*/snapshots/**/*', {
   query: '?raw',
   eager: true
 });
 
 // Separately import .env files since glob doesn't include hidden files by default
-const envModules = import.meta.glob('./snapshots/**/.env', {
+const envModules = import.meta.glob('./lectures/*/snapshots/**/.env', {
   query: '?raw',
   eager: true
 });
 
 // Import markdown files for content, how to run, and expected output
-const markdownModules = import.meta.glob('./snapshots/**/__*.md', {
+const markdownModules = import.meta.glob('./lectures/*/snapshots/**/__*.md', {
   query: '?raw',
   eager: true
 });
 
 // Import screenshot images from __screenshots/ folders
-const screenshotModules = import.meta.glob('./snapshots/**/__screenshots/**/*.{png,jpg,jpeg,gif,webp}', {
+const screenshotModules = import.meta.glob('./lectures/*/snapshots/**/__screenshots/**/*.{png,jpg,jpeg,gif,webp}', {
   eager: true
 });
 
-// Helper function to extract snapshot ID from file path
-function getSnapshotId(path) {
-  const match = path.match(/snapshots\/([^/]+)\//);
-  return match ? match[1] : null;
+// Helper function to extract lecture ID and snapshot ID from file path
+function parsePath(path) {
+  const match = path.match(/lectures\/([^/]+)\/snapshots\/([^/]+)\//);
+  return match ? { lectureId: match[1], snapshotId: match[2] } : null;
 }
 
 // Helper function to extract filename from path
@@ -39,12 +38,12 @@ function getFilename(path) {
   return parts[parts.length - 1];
 }
 
-// Build code snapshots by grouping files by snapshot ID
+// Build code snapshots grouped by lecture and snapshot
 const codeSnapshots = {};
 
 // Process regular files
 Object.keys(modules).forEach(path => {
-  const snapshotId = getSnapshotId(path);
+  const parsed = parsePath(path);
   const filename = getFilename(path);
 
   // Skip generated_code.py and temp_data.csv files
@@ -57,64 +56,75 @@ Object.keys(modules).forEach(path => {
     return;
   }
 
-  if (snapshotId && filename) {
-    if (!codeSnapshots[snapshotId]) {
-      codeSnapshots[snapshotId] = {};
+  if (parsed && filename) {
+    if (!codeSnapshots[parsed.lectureId]) {
+      codeSnapshots[parsed.lectureId] = {};
     }
-    codeSnapshots[snapshotId][filename] = modules[path].default || '';
+    if (!codeSnapshots[parsed.lectureId][parsed.snapshotId]) {
+      codeSnapshots[parsed.lectureId][parsed.snapshotId] = {};
+    }
+    codeSnapshots[parsed.lectureId][parsed.snapshotId][filename] = modules[path].default || '';
   }
 });
 
 // Process .env files separately
 Object.keys(envModules).forEach(path => {
-  const snapshotId = getSnapshotId(path);
+  const parsed = parsePath(path);
   const filename = getFilename(path);
 
-  if (snapshotId && filename) {
-    if (!codeSnapshots[snapshotId]) {
-      codeSnapshots[snapshotId] = {};
+  if (parsed && filename) {
+    if (!codeSnapshots[parsed.lectureId]) {
+      codeSnapshots[parsed.lectureId] = {};
     }
-    codeSnapshots[snapshotId][filename] = envModules[path].default || '';
+    if (!codeSnapshots[parsed.lectureId][parsed.snapshotId]) {
+      codeSnapshots[parsed.lectureId][parsed.snapshotId] = {};
+    }
+    codeSnapshots[parsed.lectureId][parsed.snapshotId][filename] = envModules[path].default || '';
   }
 });
 
-// Build markdown content by snapshot ID
+// Build markdown content by lecture and snapshot
 const markdownContent = {};
 
 Object.keys(markdownModules).forEach(path => {
-  const snapshotId = getSnapshotId(path);
+  const parsed = parsePath(path);
   const filename = getFilename(path);
 
-  if (snapshotId && filename) {
-    if (!markdownContent[snapshotId]) {
-      markdownContent[snapshotId] = {};
+  if (parsed && filename) {
+    if (!markdownContent[parsed.lectureId]) {
+      markdownContent[parsed.lectureId] = {};
+    }
+    if (!markdownContent[parsed.lectureId][parsed.snapshotId]) {
+      markdownContent[parsed.lectureId][parsed.snapshotId] = {};
     }
 
     // Map markdown files to their corresponding fields
     if (filename === '__content.md') {
-      markdownContent[snapshotId].content = markdownModules[path].default || '';
+      markdownContent[parsed.lectureId][parsed.snapshotId].content = markdownModules[path].default || '';
     } else if (filename === '__how_to_run.md') {
-      markdownContent[snapshotId].howToRun = markdownModules[path].default || '';
+      markdownContent[parsed.lectureId][parsed.snapshotId].howToRun = markdownModules[path].default || '';
     } else if (filename === '__expected_output.md') {
-      markdownContent[snapshotId].expectedOutput = markdownModules[path].default || '';
+      markdownContent[parsed.lectureId][parsed.snapshotId].expectedOutput = markdownModules[path].default || '';
     }
   }
 });
 
-// Build screenshots by snapshot ID
+// Build screenshots by lecture and snapshot
 const screenshots = {};
 
 Object.keys(screenshotModules).forEach(path => {
-  const snapshotId = getSnapshotId(path);
+  const parsed = parsePath(path);
   const filename = getFilename(path);
 
-  if (snapshotId && filename) {
-    if (!screenshots[snapshotId]) {
-      screenshots[snapshotId] = [];
+  if (parsed && filename) {
+    if (!screenshots[parsed.lectureId]) {
+      screenshots[parsed.lectureId] = {};
+    }
+    if (!screenshots[parsed.lectureId][parsed.snapshotId]) {
+      screenshots[parsed.lectureId][parsed.snapshotId] = [];
     }
 
-    // Add screenshot with its URL and filename
-    screenshots[snapshotId].push({
+    screenshots[parsed.lectureId][parsed.snapshotId].push({
       url: screenshotModules[path].default,
       filename: filename
     });
@@ -122,11 +132,14 @@ Object.keys(screenshotModules).forEach(path => {
 });
 
 // Combine metadata with code snapshots and markdown content
-export const sections = sectionsMeta.map(meta => ({
-  ...meta,
-  content: markdownContent[meta.id]?.content || meta.content || '',
-  howToRun: markdownContent[meta.id]?.howToRun || meta.howToRun || null,
-  expectedOutput: markdownContent[meta.id]?.expectedOutput || meta.expectedOutput || null,
-  codeSnapshot: codeSnapshots[meta.id] || {},
-  screenshots: screenshots[meta.id] || []
+export const lectures = lecturesMeta.map(lecture => ({
+  ...lecture,
+  sections: lecture.sections.map(meta => ({
+    ...meta,
+    content: markdownContent[lecture.id]?.[meta.id]?.content || '',
+    howToRun: markdownContent[lecture.id]?.[meta.id]?.howToRun || null,
+    expectedOutput: markdownContent[lecture.id]?.[meta.id]?.expectedOutput || null,
+    codeSnapshot: codeSnapshots[lecture.id]?.[meta.id] || {},
+    screenshots: screenshots[lecture.id]?.[meta.id] || []
+  }))
 }));
