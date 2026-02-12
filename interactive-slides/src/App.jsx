@@ -24,6 +24,7 @@ function App() {
   const [isDragging, setIsDragging] = useState(false);
   const [mobileTab, setMobileTab] = useState('content'); // 'code', 'content', 'info'
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [instructorView, setInstructorView] = useState('diff'); // 'diff' or 'current'
   const containerRef = useRef(null);
 
   const currentLecture = lectures.find(l => l.id === currentLectureId);
@@ -125,6 +126,24 @@ function App() {
           )}
         </div>
 
+        {/* Instructor mode view toggle */}
+        {isInstructorMode && (
+          <div className="instructor-toggle desktop-only">
+            <button
+              className={`instructor-toggle-btn ${instructorView === 'diff' ? 'active' : ''}`}
+              onClick={() => setInstructorView('diff')}
+            >
+              Diff
+            </button>
+            <button
+              className={`instructor-toggle-btn ${instructorView === 'current' ? 'active' : ''}`}
+              onClick={() => setInstructorView('current')}
+            >
+              Current Only
+            </button>
+          </div>
+        )}
+
         {/* Desktop layout */}
         <div
           className="top-panels desktop-only"
@@ -132,7 +151,7 @@ function App() {
             height: hasBottomPanel ? `${100 - bottomHeight}%` : '100%',
           }}
         >
-          {isInstructorMode ? (
+          {isInstructorMode && instructorView === 'diff' ? (
             <>
               <div className="column code-column">
                 <CodeViewer
@@ -155,6 +174,15 @@ function App() {
                 />
               </div>
             </>
+          ) : isInstructorMode && instructorView === 'current' ? (
+            <div className="column" style={{ flex: 1 }}>
+              <CodeViewer
+                currentSection={currentSection}
+                prevSection={prevSection}
+                selectedFile={selectedFile}
+                onFileSelect={setSelectedFile}
+              />
+            </div>
           ) : (
             <>
               <div className="column code-column">

@@ -167,6 +167,39 @@
   overflow: auto;
 }
 
+/* Instructor mode toggle */
+.instructor-toggle {
+  display: flex;
+  gap: 4px;
+  padding: 6px 12px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+  flex-shrink: 0;
+}
+
+.instructor-toggle-btn {
+  background: none;
+  border: 1px solid #dee2e6;
+  color: #6c757d;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.instructor-toggle-btn:hover {
+  background-color: #e9ecef;
+  color: #2c3e50;
+}
+
+.instructor-toggle-btn.active {
+  background-color: #0d7377;
+  border-color: #0d7377;
+  color: white;
+}
+
 /* Desktop only elements */
 .desktop-only {
   display: flex;
