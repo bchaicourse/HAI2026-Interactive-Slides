@@ -2,14 +2,19 @@ import { useState, useEffect } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { prism } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import * as Diff from 'diff';
+import JSZip from 'jszip';
 import './CodeViewer.css';
 
-function CodeViewer({ currentSection, prevSection, selectedFile, onFileSelect }) {
+function CodeViewer({ currentSection, prevSection, selectedFile, onFileSelect, diffMode = 'current', label }) {
   // Filter out markdown files that start with __ (metadata files)
   const files = Object.keys(currentSection.codeSnapshot).filter(
     filename => !filename.startsWith('__')
   );
   const [activeFile, setActiveFile] = useState(files[0] || null);
+  const [copied, setCopied] = useState(false);
+
+  // Use selectedFile from props when available (for syncing multiple CodeViewers)
+  const effectiveFile = (selectedFile && files.includes(selectedFile)) ? selectedFile : activeFile;
 
   // Reset active file when section changes
   useEffect(() => {
@@ -27,18 +32,50 @@ function CodeViewer({ currentSection, prevSection, selectedFile, onFileSelect })
     onFileSelect(file);
   };
 
-  const currentCode = currentSection.codeSnapshot[activeFile] || '';
-  const prevCode = prevSection?.codeSnapshot?.[activeFile] || '';
+  const handleCopyFile = async () => {
+    await navigator.clipboard.writeText(currentCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  const handleDownloadZip = async () => {
+    const zip = new JSZip();
+    for (const [filename, content] of Object.entries(currentSection.codeSnapshot)) {
+      if (!filename.startsWith('__')) {
+        zip.file(filename, content);
+      }
+    }
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${currentSection.id}.zip`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const currentCode = currentSection.codeSnapshot[effectiveFile] || '';
+  const prevCode = prevSection?.codeSnapshot?.[effectiveFile] || '';
 
   // Calculate diff
   const diffResult = Diff.diffLines(prevCode, currentCode);
 
   const renderDiffCode = () => {
+    // In 'previous' mode with no previous section, show empty state
+    if (diffMode === 'previous' && !prevSection) {
+      return (
+        <div className="empty-state">
+          <p>No previous version</p>
+        </div>
+      );
+    }
+
     if (!prevSection || prevCode === currentCode) {
       // No diff needed - show plain code
+      const codeToShow = diffMode === 'previous' ? prevCode : currentCode;
       return (
         <SyntaxHighlighter
-          language={getLanguageFromFilename(activeFile)}
+          language={getLanguageFromFilename(effectiveFile)}
           style={prism}
           showLineNumbers={false}
           customStyle={{
@@ -47,7 +84,7 @@ function CodeViewer({ currentSection, prevSection, selectedFile, onFileSelect })
             background: '#ffffff',
           }}
         >
-          {currentCode}
+          {codeToShow}
         </SyntaxHighlighter>
       );
     }
@@ -62,12 +99,18 @@ function CodeViewer({ currentSection, prevSection, selectedFile, onFileSelect })
             ? 'diff-removed'
             : 'diff-unchanged';
 
-          if (part.removed) return null; // Don't show removed lines in this view
+          if (diffMode === 'previous') {
+            // Previous mode: show removed (red), hide added
+            if (part.added) return null;
+          } else {
+            // Current mode (default): show added (green), hide removed
+            if (part.removed) return null;
+          }
 
           return (
             <div key={index} className={className}>
               <SyntaxHighlighter
-                language={getLanguageFromFilename(activeFile)}
+                language={getLanguageFromFilename(effectiveFile)}
                 style={prism}
                 showLineNumbers={false}
                 customStyle={{
@@ -100,20 +143,20 @@ function CodeViewer({ currentSection, prevSection, selectedFile, onFileSelect })
   const getFileStatus = (filename) => {
     if (!prevSection) return null;
 
-    const prevCode = prevSection.codeSnapshot?.[filename] || '';
-    const currentCode = currentSection.codeSnapshot[filename] || '';
+    const prev = prevSection.codeSnapshot?.[filename] || '';
+    const curr = currentSection.codeSnapshot[filename] || '';
 
-    if (!prevCode && currentCode) {
+    if (!prev && curr) {
       return 'new';
     }
-    if (prevCode && currentCode && prevCode !== currentCode) {
+    if (prev && curr && prev !== curr) {
       return 'modified';
     }
     return null;
   };
 
   const getFileBadge = () => {
-    const status = getFileStatus(activeFile);
+    const status = getFileStatus(effectiveFile);
     if (!status) return null;
 
     if (status === 'new') {
@@ -140,6 +183,9 @@ function CodeViewer({ currentSection, prevSection, selectedFile, onFileSelect })
       <div className="file-list">
         <div className="file-list-header">
           <h3>Files</h3>
+          <button className="code-action-btn" onClick={handleDownloadZip} title="Download all files as .zip">
+            Download All
+          </button>
         </div>
         <div className="file-items">
           {files.map((file) => {
@@ -147,7 +193,7 @@ function CodeViewer({ currentSection, prevSection, selectedFile, onFileSelect })
             return (
               <button
                 key={file}
-                className={`file-item ${activeFile === file ? 'active' : ''} ${status ? `file-${status}` : ''}`}
+                className={`file-item ${effectiveFile === file ? 'active' : ''} ${status ? `file-${status}` : ''}`}
                 onClick={() => handleFileClick(file)}
               >
                 {status && <span className={`status-indicator ${status}`}></span>}
@@ -161,8 +207,14 @@ function CodeViewer({ currentSection, prevSection, selectedFile, onFileSelect })
       <div className="code-content">
         <div className="code-header">
           <div className="code-filename">
-            <span>{activeFile}</span>
+            {label && <span className="code-viewer-label">{label}</span>}
+            <span>{effectiveFile}</span>
             {getFileBadge()}
+          </div>
+          <div className="code-actions">
+            <button className="code-action-btn" onClick={handleCopyFile} title="Copy file">
+              {copied ? 'Copied!' : 'Copy'}
+            </button>
           </div>
         </div>
         <div className="code-body">{renderDiffCode()}</div>

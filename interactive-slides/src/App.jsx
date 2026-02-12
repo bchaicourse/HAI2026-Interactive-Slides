@@ -13,6 +13,8 @@ function getInitialLecture() {
   return match || lectures[0];
 }
 
+const isInstructorMode = new URLSearchParams(window.location.search).get('mode') === 'instructor';
+
 function App() {
   const initialLecture = getInitialLecture();
   const [currentLectureId, setCurrentLectureId] = useState(initialLecture.id);
@@ -130,18 +132,44 @@ function App() {
             height: hasBottomPanel ? `${100 - bottomHeight}%` : '100%',
           }}
         >
-          <div className="column code-column">
-            <CodeViewer
-              currentSection={currentSection}
-              prevSection={prevSection}
-              selectedFile={selectedFile}
-              onFileSelect={setSelectedFile}
-            />
-          </div>
-
-          <div className="column content-column">
-            <ContentViewer section={currentSection} />
-          </div>
+          {isInstructorMode ? (
+            <>
+              <div className="column code-column">
+                <CodeViewer
+                  currentSection={currentSection}
+                  prevSection={prevSection}
+                  selectedFile={selectedFile}
+                  onFileSelect={setSelectedFile}
+                  diffMode="previous"
+                  label="Previous"
+                />
+              </div>
+              <div className="column content-column">
+                <CodeViewer
+                  currentSection={currentSection}
+                  prevSection={prevSection}
+                  selectedFile={selectedFile}
+                  onFileSelect={setSelectedFile}
+                  diffMode="current"
+                  label="Current"
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="column code-column">
+                <CodeViewer
+                  currentSection={currentSection}
+                  prevSection={prevSection}
+                  selectedFile={selectedFile}
+                  onFileSelect={setSelectedFile}
+                />
+              </div>
+              <div className="column content-column">
+                <ContentViewer section={currentSection} />
+              </div>
+            </>
+          )}
         </div>
 
         {/* Mobile tab content */}

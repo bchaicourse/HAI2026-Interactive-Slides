@@ -14,6 +14,9 @@
 .file-list-header {
   padding: 12px 16px;
   border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .file-list-header h3 {
@@ -118,6 +121,28 @@
   color: white;
 }
 
+.code-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.code-action-btn {
+  background: none;
+  border: 1px solid #dee2e6;
+  color: #495057;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  transition: all 0.2s;
+}
+
+.code-action-btn:hover {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+}
+
 .code-body {
   flex: 1;
   overflow: auto;
@@ -142,6 +167,16 @@
 
 .diff-unchanged {
   background-color: transparent;
+}
+
+.code-viewer-label {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+  text-transform: uppercase;
+  background-color: #6c757d;
+  color: white;
 }
 
 .empty-state {
