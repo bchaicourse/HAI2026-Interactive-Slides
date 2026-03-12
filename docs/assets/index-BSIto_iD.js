@@ -45005,7 +45005,7 @@ def search_wikipedia(query: str) -> str:
         return f"Wikipedia search failed: {e}"
 `,eS=Object.freeze(Object.defineProperty({__proto__:null,default:bS},Symbol.toStringTag,{value:"Module"})),tS=`## Preset Configurations
 
-The configurable pipeline from the previous step is powerful, but setting up agents and pipeline steps from scratch takes time. Presets give students a few ready-made configurations to load with one click, explore how they work, and then modify.
+The configurable pipeline from the previous step is powerful, but setting up agents and pipeline steps from scratch takes time. Presets give you a few ready-made configurations to load with one click, explore how they work, and then modify.
 
 ### Three Presets
 
