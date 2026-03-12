@@ -9,7 +9,7 @@ import tab_agents
 import tab_pipeline
 from builder import build_pipeline
 from defaults import PRESETS
-from display import run_and_display
+from display import run_and_display, show_previous_run
 
 load_dotenv()
 
@@ -80,6 +80,7 @@ with t_run:
         height=120,
     )
 
+    ran = False
     if st.button("Get Decision Support", type="primary", use_container_width=True):
         if not question.strip():
             st.warning("Please enter a question.")
@@ -91,7 +92,11 @@ with t_run:
                         st.session_state.pipeline,
                     )
                 run_and_display(team, question)
+                ran = True
             except Exception as e:
                 st.error(f"Error: {e}")
                 import traceback
                 st.code(traceback.format_exc())
+
+    if not ran:
+        show_previous_run()
