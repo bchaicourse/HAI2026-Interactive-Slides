@@ -53,5 +53,31 @@ export const lectures = [
       { id: '11-human-in-the-loop', title: 'Approval Gate', part: 3 },
       { id: '12-reject-feedback', title: 'Reject & Feedback', part: 3 }
     ]
+  },
+  {
+    id: 'lecture3',
+    title: 'Multi-Agent Systems',
+    parts: {
+      1: 'AutoGen Fundamentals',
+      2: 'Decision Support'
+    },
+    sections: [
+      { id: '01-setup', title: 'Setup: Install AutoGen', part: 1 },
+      { id: '02-create-agent', title: 'Creating Your First Agent', part: 1 },
+      { id: '03-agent-with-tools', title: 'Adding Tools to an Agent', part: 1 },
+      { id: '04-multiple-agents', title: 'Multiple Agents', part: 1 },
+      { id: '05-round-robin-group-chat', title: 'RoundRobinGroupChat', part: 1 },
+      { id: '06-selector-group-chat', title: 'SelectorGroupChat', part: 1 },
+      { id: '07-orchestrated-selector', title: 'LLM-Based Orchestration', part: 1 },
+      { id: '08-swarm-handoff', title: 'Swarm & Handoff', part: 1 },
+      { id: '09-society-of-mind', title: 'Nesting Teams', part: 1 },
+      { id: '10-single-agent', title: 'Single Agent in Streamlit', part: 2 },
+      { id: '11-wiki-tool', title: 'Adding a Wikipedia Tool', part: 2 },
+      { id: '12-manual-pipeline', title: 'Sequential Pipeline', part: 2 },
+      { id: '13-society-pipeline', title: 'Adding a Debate Team', part: 2 },
+      { id: '14-configurable-agents', title: 'Configurable Agents', part: 2 },
+      { id: '15-configurable-pipeline', title: 'Configurable Pipeline', part: 2 },
+      { id: '16-presets', title: 'Preset Configurations', part: 2 }
+    ]
   }
 ];
